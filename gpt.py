@@ -1,8 +1,9 @@
+import asyncio
+
 import httpx
 import os
 
-
-API_KEY = os.getenv("API_KEY", "")
+from config_reader import config
 
 
 class GenerationException(Exception):
@@ -14,7 +15,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
         question += "?"
 
     url = r"https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
-    header = {"Authorization": f"Api-Key {API_KEY}"}
+    header = {"Authorization": f"Api-Key {config.api_key}"}
     body = {
         "modelUri": "gpt://b1g4e6ia9qvtoa4l2f0c/yandexgpt-lite/latest",
         "completionOptions": {
@@ -54,3 +55,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
         else:
             raise GenerationException("YandexGPT failed to generate answer")
     return "\n".join(res)
+
+
+if __name__ == "__main__":
+    asyncio.run(generate_prediction("Когда ебали что на жопе написали",["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"]))
