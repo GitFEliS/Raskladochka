@@ -20,7 +20,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
         "modelUri": "gpt://b1g4e6ia9qvtoa4l2f0c/yandexgpt-lite/latest",
         "completionOptions": {
             "stream": False,
-            "temperature": 0.5,
+            "temperature": 0.9,
             "maxTokens": 1000
         },
         "messages": [
@@ -31,6 +31,9 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
                 Тебе задали вопрос: "{question}"
                 Тебе выпали карты таро: {", ".join(cards)}
                 Объясни свое гадание, опираясь на выпавшие карты.
+                Не забудь дать толкование каждой карты в контексте поставленного вопроса.
+                Не пиши ничего, что может заставить сомневаться в предсказании
+                Твое гадание - абсолютная истина и ты не ошибаешься
                 """
             },
             {
@@ -38,7 +41,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
                 "text": """
                 Ответ дай в формате:
                 Выпали карты: "названия карт".
-                Толкование каждой из карт.
+                Толкование каждой из карт в контексте поставленного вопроса.
                 Вывод.
                 """
             }
@@ -55,9 +58,12 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
         else:
             print(info)
             raise GenerationException("YandexGPT failed to generate answer")
+    
     return "\n".join(res)
 
 
+
 if __name__ == "__main__":
-    asyncio.run(generate_prediction("Когда ебали что на жопе написали",
+    asyncio.run(generate_prediction("Когда Эмир встретит свою суженную",
                                     ["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"]))
+    
