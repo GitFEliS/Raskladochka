@@ -35,14 +35,16 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
             {
                 "role": "system",
                 "text": """
-                Ответ дай в формате:\
-                "Название карты: описание ее значения"\
-                "Вывод: итог толкования карт"\
+                Ответ дай в формате:
+                Выпали карты: "названия карт".
+                Толкование каждой из карт.
+                Вывод.
                 """
             }
         ]
     }
-    res_dict = await httpx.post(url=url, headers=header, json=body, timeout=30).raise_for_status().json()
+    async with httpx.AsyncClient() as client:
+        res_dict = (await client.post(url=url, headers=header, json=body, timeout=30)).raise_for_status().json()
     messages = res_dict['result']['alternatives']
     res = []
     for message in messages:
