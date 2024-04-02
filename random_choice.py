@@ -4,9 +4,10 @@ import random
 with open('tarot-images.json', 'r') as f:
     data = json.load(f)
 
-def random_choice(n :int = 3):
-  sample = random.sample(data["cards"], n)
-  return [i["name"] for i in sample]
+
+def random_choice(n: int = 3):
+    sample = random.sample(data["cards"], n)
+    return [i["name"] for i in sample]
 
 
 if __name__ == '__main__':

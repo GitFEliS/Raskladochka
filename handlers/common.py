@@ -14,7 +14,7 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer(
         text="Ты говно ебаное, оплати сука и сможешь спросить свою хуйню и АИ галадки нахуй",
         reply_markup=ReplyKeyboardRemove()
-    )
+        )
 
 
 @router.message(StateFilter(None), Command(commands=["cancel"]))
@@ -24,7 +24,7 @@ async def cmd_cancel_no_state(message: Message, state: FSMContext):
     await message.answer(
         text="Нечего отменять",
         reply_markup=ReplyKeyboardRemove()
-    )
+        )
 
 
 @router.message(Command(commands=["cancel"]))
@@ -34,4 +34,4 @@ async def cmd_cancel(message: Message, state: FSMContext):
     await message.answer(
         text="Действие отменено",
         reply_markup=ReplyKeyboardRemove()
-    )
+        )

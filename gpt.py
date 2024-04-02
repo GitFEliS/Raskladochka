@@ -58,3 +58,6 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
     return "\n".join(res)
 
 
+if __name__ == "__main__":
+    asyncio.run(generate_prediction("Когда ебали что на жопе написали",
+                                    ["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"]))
