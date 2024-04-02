@@ -16,8 +16,6 @@
 
 == Ссылки == 
 
-* [https://github.com/HackProj/bot Репозиторий Telegram бота]
-* [https://github.com/HackProj/backend Репозиторий Backend'а]
-* [https://github.com/HackProj/hint_api Репозиторий Сервиса по генерации оскорблений]
+* [https://github.com/GitFEliS/Raskladochka Репозиторий Telegram бота]
 * [https://www.youtube.com/watch?v=OqEs0dG8c8o Видео]
 * [https://docs.google.com/presentation/d/1z1gl8VnT2z5jV-IwOfyctpS3ectKFkosSS6iuakBa-Y/edit?usp=sharing Презентация]
