@@ -3,9 +3,9 @@ import logging
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.fsm.storage.memory import MemoryStorage
-# Доп. импорт для раздела про стратегии FSM
-from aiogram.fsm.strategy import FSMStrategy
-from aiogram.types import ContentType
+# Дополнительный импорт для раздела про стратегии FSM
+# from aiogram.fsm.strategy import FSMStrategy
+# from aiogram.types import ContentType
 from aiogram.filters import Command, StateFilter
 
 # файл config_reader.py можно взять из репозитория
@@ -19,7 +19,7 @@ async def main():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-    )
+        )
 
     # Если не указать storage, то по умолчанию всё равно будет MemoryStorage
     # Но явное лучше неявного =]
@@ -27,9 +27,9 @@ async def main():
     # Для выбора другой стратегии FSM:
     # dp = Dispatcher(storage=MemoryStorage(), fsm_strategy=FSMStrategy.CHAT)
     bot = Bot(config.bot_token.get_secret_value())
-    dp.message.register(cmd_taro ,  Command(commands="taro") )
+    dp.message.register(cmd_taro, Command(commands="taro"))
     dp.pre_checkout_query.register(pre_checkout_query)
-    dp.message.register(successfull_payment,  F.successful_payment)
+    dp.message.register(successfull_payment, F.successful_payment)
     dp.include_routers(common.router, ordering_food.router)
     # сюда импортируйте ваш собственный роутер для напитков
 

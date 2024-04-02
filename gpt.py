@@ -22,7 +22,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
             "stream": False,
             "temperature": 0.5,
             "maxTokens": 1000
-        },
+            },
         "messages": [
             {
                 "role": "system",
@@ -32,7 +32,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
                 Тебе выпали карты таро: {", ".join(cards)}
                 Объясни свое гадание, опираясь на выпавшие карты.
                 """
-            },
+                },
             {
                 "role": "system",
                 "text": """
@@ -41,9 +41,9 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
                 Толкование каждой из карт.
                 Вывод.
                 """
-            }
-        ]
-    }
+                }
+            ]
+        }
     async with httpx.AsyncClient() as client:
         res_dict = (await client.post(url=url, headers=header, json=body, timeout=30)).raise_for_status().json()
     messages = res_dict['result']['alternatives']
@@ -58,4 +58,5 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
 
 
 if __name__ == "__main__":
-    asyncio.run(generate_prediction("Когда ебали что на жопе написали",["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"]))
+    asyncio.run(generate_prediction("Когда ебали что на жопе написали",
+                                    ["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"]))
