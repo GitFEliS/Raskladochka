@@ -135,4 +135,4 @@ dmypy.json
 .pyre/
 .env
 poetry.lock
-.idea
+.idea/

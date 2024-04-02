@@ -53,9 +53,8 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
         if status in ("ALTERNATIVE_STATUS_PARTIAL", "ALTERNATIVE_STATUS_FINAL"):
             res.append(info['text'])
         else:
+            print(info)
             raise GenerationException("YandexGPT failed to generate answer")
     return "\n".join(res)
 
 
-if __name__ == "__main__":
-    asyncio.run(generate_prediction("Когда ебали что на жопе написали",["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"]))
