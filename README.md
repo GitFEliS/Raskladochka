@@ -1,11 +1,11 @@
-Раскладочка
-== Описание ==
+# Раскладочка
+# Описание
 
 Перед командой стояла сложнейшая задача по созданию телеграмм бота , который сможет заглянуть в будущее и поведать ближайшие роковые события в вашей жизни, основываясь на гаданиях таро. Доверьте свою судьбу картам или пойдите ей на перекор вместе с нашим ботом!
 
-== Функциональность / недостатки ==
+# Функциональность / недостатки
 
-== Команда ==
+# Команда
 
 * Нуждин Дмитрий (lead)
 * Перевощиков Андрей (dev)
@@ -14,8 +14,8 @@
 * Шадрин Михаил (ML специалист)
 
 
-== Ссылки == 
+# Ссылки
 
-* [https://github.com/GitFEliS/Raskladochka Репозиторий Telegram бота]
-* [https://www.youtube.com/watch?v=OqEs0dG8c8o Видео]
-* [https://docs.google.com/presentation/d/1z1gl8VnT2z5jV-IwOfyctpS3ectKFkosSS6iuakBa-Y/edit?usp=sharing Презентация]
+* [Репозиторий Telegram бота](https://github.com/GitFEliS/Raskladochka)
+* [Видео](https://www.youtube.com/watch?v=OqEs0dG8c8o)
+* [Презентация](https://docs.google.com/presentation/d/1z1gl8VnT2z5jV-IwOfyctpS3ectKFkosSS6iuakBa-Y/edit?usp=sharing)
