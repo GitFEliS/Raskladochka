@@ -1,6 +1,7 @@
 from typing import List
 
 from aiogram import Router, F, Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import InputMediaPhoto, Message, ReplyKeyboardRemove, Update, LabeledPrice, PreCheckoutQuery, \
@@ -62,14 +63,14 @@ async def pre_checkout_query(pre_checkout: PreCheckoutQuery, bot: Bot):
 
 
 async def successfull_payment(message: Message, bot: Bot, state: FSMContext):
-    await message.answer("Оплата прошла успешно. Напиши свой вопрос в чат")
+    await message.answer("Оплата прошла успешно. Напиши свой вопрос в чат. \n Гадалка по умолчанию: Потерянная жрица")
     await state.set_state(TaroQuestion.ask_question)
 
 
 @router.message(TaroQuestion.ask_question)
 async def ask_question(message: Message, state: FSMContext):
     cool_dict[message.chat.id] = message.text
-    await message.answer(f"Вопрос который задаем гадалке -  {message.text}. Все верно?",
+    await message.answer(f"Вопрос который задаем гадалке - '{message.text}' Все верно?",
                          reply_markup=make_row_keyboard(q_types)
                          )
     await state.set_state(TaroQuestion.confirm_qustion)
@@ -91,6 +92,7 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
     card_names = [str(card) for card in cards]
     cards_img = list(map(lambda x: x.img_path, cards))
     generator = cool_dict.get(message.chat.username, None)
+
     match generator:
         case None:
             await message.answer(f"Отправляю вопрос потерянной жрице", reply_markup=ReplyKeyboardRemove())
@@ -117,7 +119,10 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
             result = await sber_prediction(user_message, card_names)
 
     await send_photos(message, bot, cards_img)
-    await bot.send_message(message.chat.id, result, parse_mode="Markdown")
+    try:
+        await bot.send_message(message.chat.id, result, parse_mode="Markdown")
+    except TelegramBadRequest:
+        await bot.send_message(message.chat.id, result)
     await state.clear()
 
 
