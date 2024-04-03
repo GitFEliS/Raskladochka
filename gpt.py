@@ -3,21 +3,21 @@ import asyncio
 import httpx
 
 from config_reader import config
-from random_choice import tarot_deck
+from random_choice import TarotCard, tarot_deck
 
 
 class GenerationException(Exception):
     ...
 
 
-def question_prompt(question: str, cards: list[str]) -> str:
+def question_prompt(question: str, cards: list[TarotCard]) -> str:
     if not question.endswith("?"):
         question += "?"
 
     return f"""
                 Ты — гадалка, которая делает предсказания на картах таро.
                 Тебе задали вопрос: "{question}"
-                Тебе выпали карты таро: {", ".join(cards)}
+                Тебе выпали карты таро: {", ".join([c.name for c in cards])}
                 Объясни свое гадание, опираясь на выпавшие карты.
                 Не забудь дать толкование каждой карты в контексте поставленного вопроса.
                 Не пиши ничего, что может заставить сомневаться в предсказании
@@ -26,11 +26,11 @@ def question_prompt(question: str, cards: list[str]) -> str:
 
 
 def answer_requirements_prompt() -> str:
-    return """
-                Ответ дай в формате:
-                Вам выпали карты: "названия карт".
-                Толкование каждой из карт в контексте поставленного вопроса.
-                Вывод.
+    return """ 
+                Ответ построй следующим образом:
+                Колода дала мне карты: "названия карт"
+                Карты говорят мне, что "краткая интерпретация предсказания"
+                Уложись в 500 символов.
                 """
 
 

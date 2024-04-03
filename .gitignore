@@ -135,3 +135,6 @@ dmypy.json
 .pyre/
 poetry.lock
 .idea/
+
+synth_result/
+.creds/

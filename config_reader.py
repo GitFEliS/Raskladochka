@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     api_key: str
     # gigachat_client_secret: str
     gigachat_auth_data: str
+    yandex_service_account_id: str
+    yandex_service_account_key_id: str
+    yandex_folder_id: str
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra="ignore")
 
 

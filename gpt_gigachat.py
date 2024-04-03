@@ -5,12 +5,12 @@ from langchain.schema import HumanMessage, SystemMessage
 
 from config_reader import config
 from gpt import answer_requirements_prompt, question_prompt
-from random_choice import tarot_deck
+from random_choice import TarotCard, tarot_deck
 
 chat = GigaChat(credentials=config.gigachat_auth_data, verify_ssl_certs=False)
 
 
-async def generate_prediction(question: str, cards: list[str]) -> str:
+async def generate_prediction(question: str, cards: list[TarotCard]) -> str:
     messages = [
         SystemMessage(question_prompt(question, cards)),
         HumanMessage(answer_requirements_prompt())
