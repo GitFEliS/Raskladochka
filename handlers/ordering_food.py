@@ -1,13 +1,15 @@
+from typing import List
+
 from aiogram import Router, F, Bot
-from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import Message, ReplyKeyboardRemove, Update, LabeledPrice, PreCheckoutQuery
+from aiogram.types import InputMediaPhoto, Message, ReplyKeyboardRemove, Update, LabeledPrice, PreCheckoutQuery, \
+    FSInputFile
 
 from config_reader import config
 from gpt import generate_prediction
 from keyboards.simple_row import make_row_keyboard
+from random_choice import random_choice
 
 router = Router()
 
@@ -76,13 +78,23 @@ async def ask_question(message: Message, state: FSMContext):
     await state.set_state(TaroQuestion.confirm_qustion)
 
 
+async def send_photos(message: Message, bot: Bot, cards: List[str]):
+    folder_path = './cards'
+    media_group = []
+    for image in cards:
+        media_group.append(InputMediaPhoto(media=FSInputFile(folder_path + '/' + image)))
+    await bot.send_media_group(message.chat.id, media=media_group)
+
+
 @router.message(TaroQuestion.confirm_qustion, F.text.in_(q_types_correct))
 async def ask_question(message: Message, state: FSMContext, bot: Bot):
     print(message.text)
     await message.answer(f"Отправляю вопрос гадалке")
     user_message = cool_dict.get(message.chat.id, 'Сообщение не найдено.')
     print(user_message)
-    result = await generate_prediction(user_message, ["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"])
+    cards_names, cards_img = random_choice()
+    result = await generate_prediction(user_message, cards_names)
+    await send_photos(message, bot, cards_img)
 
     await bot.send_message(message.chat.id, result, parse_mode="Markdown")
     await state.clear()
