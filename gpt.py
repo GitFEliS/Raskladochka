@@ -1,46 +1,57 @@
 import asyncio
 
 import httpx
-import os
 
 from config_reader import config
+from random_choice import tarot_deck
 
 
 class GenerationException(Exception):
     ...
 
 
-async def generate_prediction(question: str, cards: list[str]) -> str:
+def question_prompt(question: str, cards: list[str]) -> str:
     if not question.endswith("?"):
         question += "?"
 
+    return f"""
+                Ты — гадалка, которая делает предсказания на картах таро.
+                Тебе задали вопрос: "{question}"
+                Тебе выпали карты таро: {", ".join(cards)}
+                Объясни свое гадание, опираясь на выпавшие карты.
+                Не забудь дать толкование каждой карты в контексте поставленного вопроса.
+                Не пиши ничего, что может заставить сомневаться в предсказании
+                Твое гадание - абсолютная истина и ты не ошибаешься
+                """
+
+
+def answer_requirements_prompt() -> str:
+    return """
+                Ответ дай в формате:
+                Вам выпали карты: "названия карт".
+                Толкование каждой из карт в контексте поставленного вопроса.
+                Вывод.
+                """
+
+
+async def generate_prediction(question: str, cards: list[str]) -> str:
     url = r"https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
     header = {"Authorization": f"Api-Key {config.api_key}"}
     body = {
         "modelUri": "gpt://b1g4e6ia9qvtoa4l2f0c/yandexgpt-lite/latest",
         "completionOptions": {
             "stream": False,
-            "temperature": 0.5,
+            "temperature": 0.9,
             "maxTokens": 1000
         },
         "messages": [
             {
                 "role": "system",
-                "text": f"""
-                Ты — гадалка, которая делает предсказания на картах таро.
-                Тебе задали вопрос: "{question}"
-                Тебе выпали карты таро: {", ".join(cards)}
-                Объясни свое гадание, опираясь на выпавшие карты.
-                """
+                "text": question_prompt(question, cards)
             },
             {
                 "role": "system",
-                "text": """
-                Ответ дай в формате:
-                Выпали карты: "названия карт".
-                Толкование каждой из карт.
-                Вывод.
-                """
+                "text": answer_requirements_prompt()
             }
         ]
     }
@@ -55,9 +66,10 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
         else:
             print(info)
             raise GenerationException("YandexGPT failed to generate answer")
+
     return "\n".join(res)
 
 
 if __name__ == "__main__":
-    asyncio.run(generate_prediction("Когда ебали что на жопе написали",
-                                    ["Дурак", "перевернутая Верховная жрица", "перевёрнутые Кубки"]))
+    asyncio.run(generate_prediction("Когда Эмир встретит свою суженную",
+                                    tarot_deck.random_choice()))
