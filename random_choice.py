@@ -1,12 +1,9 @@
 import json
+import os.path
 import random
 
 REVERSED_CARD_CHANCE = 0.25
 
-
-def random_choice(n: int = 3):
-    sample = random.sample(data["cards"], n)
-    return [i["name"] for i in sample], [i["img"] for i in sample]
 
 class TarotCard:
 
@@ -41,7 +38,7 @@ class TarotDeck:
     def random_choice(self, n: int = 3):
         self.shuffle_deck()
         sample = self.deck[:n]
-        return [card.__str__() for card in sample]
+        return sample
 
 
 tarot_deck = TarotDeck("tarot-images.json")

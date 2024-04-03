@@ -7,21 +7,26 @@ from aiogram.types import InputMediaPhoto, Message, ReplyKeyboardRemove, Update,
     FSInputFile
 
 from config_reader import config
-from gpt import generate_prediction
+from gpt import GenerationException, generate_prediction as yandex_prediction
+from gpt_gigachat import generate_prediction as sber_prediction
 from keyboards.simple_row import make_row_keyboard
-from random_choice import random_choice
+from random_choice import tarot_deck
 
 router = Router()
 
-q_types = ["Да", "Задать вопрос заново"]
+q_types = ["Да", "Задать вопрос заново", "Выбрать таролога"]
 q_types_correct = ["Да"]
 q_types_again = ["Задать вопрос заново"]
+q_types_taro = ["Выбрать таролога"]
+
+generator_types = ["Желтая жрица таро", "Зеленая ведьма"]
 
 
 class TaroQuestion(StatesGroup):
     payment = State()
     ask_question = State()
     confirm_qustion = State()
+    chose_generator = State()
 
 
 cool_dict = {}
@@ -33,13 +38,10 @@ async def cmd_taro(message: Message, bot: Bot, state: FSMContext):
     )
     chat_id = message.chat.id
     title = "Оплата расклада таро"
-    description = "Оплата на за 1 вопрос"
-    # select a payload just for you to recognize its the donation from your bot
+    description = "Оплата позволит вам обратиться к древней жрице"
     payload = "Custom-Payload"
     currency = "rub"
-    # price in dollars
     price = 30000
-    # price * 100 so as to include 2 decimal points
     prices = [LabeledPrice(label="Оплата", amount=price)]
 
     await bot.send_invoice(
@@ -53,7 +55,6 @@ async def cmd_taro(message: Message, bot: Bot, state: FSMContext):
         prices=prices,
 
     )
-    # await state.set_state(OrderFood.payment)
 
 
 async def pre_checkout_query(pre_checkout: PreCheckoutQuery, bot: Bot):
@@ -63,16 +64,12 @@ async def pre_checkout_query(pre_checkout: PreCheckoutQuery, bot: Bot):
 async def successfull_payment(message: Message, bot: Bot, state: FSMContext):
     await message.answer("Оплата прошла успешно. Напиши свой вопрос в чат")
     await state.set_state(TaroQuestion.ask_question)
-    # await bot.send_message(message.chat.id, "Your payment has been successfully transferred")
 
 
 @router.message(TaroQuestion.ask_question)
 async def ask_question(message: Message, state: FSMContext):
-    print(message.text)
     cool_dict[message.chat.id] = message.text
-    # await state.update_data(user_message=message.text)
-    # print(state.storage)
-    await message.answer(f"Повторю вопрос: {message.text}. Все верно?",
+    await message.answer(f"Вопрос который задаем гадалке -  {message.text}. Все верно?",
                          reply_markup=make_row_keyboard(q_types)
                          )
     await state.set_state(TaroQuestion.confirm_qustion)
@@ -88,14 +85,38 @@ async def send_photos(message: Message, bot: Bot, cards: List[str]):
 
 @router.message(TaroQuestion.confirm_qustion, F.text.in_(q_types_correct))
 async def ask_question(message: Message, state: FSMContext, bot: Bot):
-    print(message.text)
-    await message.answer(f"Отправляю вопрос гадалке")
     user_message = cool_dict.get(message.chat.id, 'Сообщение не найдено.')
     print(user_message)
-    cards_names, cards_img = random_choice()
-    result = await generate_prediction(user_message, cards_names)
-    await send_photos(message, bot, cards_img)
+    cards = tarot_deck.random_choice(3)
+    card_names = [str(card) for card in cards]
+    cards_img = list(map(lambda x: x.img_path, cards))
+    generator = cool_dict.get(message.chat.username, None)
+    match generator:
+        case None:
+            await message.answer(f"Отправляю вопрос потерянной жрице", reply_markup=ReplyKeyboardRemove())
+            try:
+                result = await yandex_prediction(user_message, card_names)
+            except GenerationException:
+                await message.answer("Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await state.clear()
+                return
+        case "Желтая жрица таро":
+            await message.answer(f"Отправляю вопрос желтой жрице", reply_markup=ReplyKeyboardRemove())
+            try:
+                result = await yandex_prediction(user_message, card_names)
+            except GenerationException:
+                await message.answer("Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await state.clear()
+                return
+        case "Зеленая ведьма":
+            await message.answer(f"Отправляю вопрос зеленой ведьме", reply_markup=ReplyKeyboardRemove())
+            result = await sber_prediction(user_message, card_names)
 
+        case _:
+            await message.answer(f"Отправляю вопрос стандартной гадалке" , reply_markup=ReplyKeyboardRemove())
+            result = await sber_prediction(user_message, card_names)
+
+    await send_photos(message, bot, cards_img)
     await bot.send_message(message.chat.id, result, parse_mode="Markdown")
     await state.clear()
 
@@ -106,3 +127,23 @@ async def ask_question(message: Message, state: FSMContext):
     await message.answer(f"Напиши свой новый вопрос", parse_mode="Markdown"
                          )
     await state.set_state(TaroQuestion.ask_question)
+
+
+@router.message(TaroQuestion.confirm_qustion, F.text.in_(q_types_taro))
+async def chose_generator(message: Message, state: FSMContext):
+    print(message.text)
+    await message.answer(f"Выбери своего таролога", reply_markup=make_row_keyboard(generator_types)
+                         )
+    await state.set_state(TaroQuestion.chose_generator)
+
+
+@router.message(TaroQuestion.chose_generator, F.text.in_(generator_types))
+async def chose_generator(message: Message, state: FSMContext):
+    print(message.text)
+    cool_dict[message.chat.username] = message.text
+    print(cool_dict)
+
+    await message.answer(f"Подтверждаем выбор. Вопрос который задаем гадалке -  {cool_dict[message.chat.id]}. Все верно?",
+                         reply_markup=make_row_keyboard(q_types)
+                         )
+    await state.set_state(TaroQuestion.confirm_qustion)

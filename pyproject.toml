@@ -11,6 +11,8 @@ aiogram = "^3.4.1"
 python-dotenv = "^1.0.1"
 pydantic-settings = "^2.2.1"
 httpx = "^0.27.0"
+langchain = "^0.1.14"
+gigachat = "^0.1.22"
 
 
 [build-system]
