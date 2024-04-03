@@ -12,7 +12,7 @@ router = Router()
 async def cmd_start(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
-        text="Ты говно ебаное, оплати сука и сможешь спросить свою хуйню и АИ галадки нахуй",
+        text="Если хочешь погадать, то с помощью команды /taro ты сможешь получить ответ от гадалки.",
         reply_markup=ReplyKeyboardRemove()
         )
 
