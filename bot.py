@@ -2,24 +2,24 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher, F
-from aiogram.fsm.storage.memory import MemoryStorage
 # Дополнительный импорт для раздела про стратегии FSM
 # from aiogram.fsm.strategy import FSMStrategy
 # from aiogram.types import ContentType
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import Command
+from aiogram.fsm.storage.memory import MemoryStorage
 
 # файл config_reader.py можно взять из репозитория
 # пример — в первой главе
 from config_reader import config
 from handlers import common, ordering_food
-from handlers.ordering_food import pre_checkout_query, successfull_payment, cmd_taro
+from handlers.ordering_food import cmd_taro, pre_checkout_query, successfull_payment
 
 
 async def main():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        )
+    )
 
     # Если не указать storage, то по умолчанию всё равно будет MemoryStorage
     # Но явное лучше неявного =]

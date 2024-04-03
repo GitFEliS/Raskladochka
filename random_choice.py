@@ -1,5 +1,4 @@
 import json
-import os.path
 import random
 
 REVERSED_CARD_CHANCE = 0.25

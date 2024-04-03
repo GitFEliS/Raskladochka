@@ -1,20 +1,14 @@
+import json
+import logging
+import os
 import subprocess
 import time
-import jwt
-import argparse
-import requests
-import asyncio
-import uuid
-import json
+
 import httpx
-import time
-import numpy as np
-import sox
-import os
+import jwt
+import requests
+
 from config_reader import config
-from gpt import GenerationException
-from random_choice import TarotCard, tarot_deck
-import logging
 
 SAMPLE_RATE = 48_000
 TOO_FEW_TIME_BEFORE_INVALIDATION = 60_000

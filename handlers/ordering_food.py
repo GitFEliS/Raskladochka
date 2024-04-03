@@ -1,11 +1,10 @@
 from typing import List
 
-from aiogram import Router, F, Bot
+from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import InputMediaPhoto, Message, ReplyKeyboardRemove, Update, LabeledPrice, PreCheckoutQuery, \
-    FSInputFile
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import FSInputFile, InputMediaPhoto, LabeledPrice, Message, PreCheckoutQuery, ReplyKeyboardRemove
 
 from config_reader import config
 from gpt import GenerationException, generate_prediction as yandex_prediction
@@ -99,7 +98,8 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
             try:
                 result = await yandex_prediction(user_message, card_names)
             except GenerationException:
-                await message.answer("Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await message.answer(
+                    "Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
                 await state.clear()
                 return
         case "Желтая жрица таро":
@@ -107,7 +107,8 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
             try:
                 result = await yandex_prediction(user_message, card_names)
             except GenerationException:
-                await message.answer("Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await message.answer(
+                    "Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
                 await state.clear()
                 return
         case "Зеленая ведьма":
@@ -115,7 +116,7 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
             result = await sber_prediction(user_message, card_names)
 
         case _:
-            await message.answer(f"Отправляю вопрос стандартной гадалке" , reply_markup=ReplyKeyboardRemove())
+            await message.answer(f"Отправляю вопрос стандартной гадалке", reply_markup=ReplyKeyboardRemove())
             result = await sber_prediction(user_message, card_names)
 
     await send_photos(message, bot, cards_img)
@@ -148,7 +149,8 @@ async def chose_generator(message: Message, state: FSMContext):
     cool_dict[message.chat.username] = message.text
     print(cool_dict)
 
-    await message.answer(f"Подтверждаем выбор. Вопрос который задаем гадалке -  {cool_dict[message.chat.id]}. Все верно?",
-                         reply_markup=make_row_keyboard(q_types)
-                         )
+    await message.answer(
+        f"Подтверждаем выбор. Вопрос который задаем гадалке -  {cool_dict[message.chat.id]}. Все верно?",
+        reply_markup=make_row_keyboard(q_types)
+        )
     await state.set_state(TaroQuestion.confirm_qustion)
