@@ -4,6 +4,10 @@ import random
 REVERSED_CARD_CHANCE = 0.25
 
 
+def random_choice(n: int = 3):
+    sample = random.sample(data["cards"], n)
+    return [i["name"] for i in sample], [i["img"] for i in sample]
+
 class TarotCard:
 
     def __init__(self, name, number, img_path):
