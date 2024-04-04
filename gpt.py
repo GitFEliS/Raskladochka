@@ -1,13 +1,13 @@
 import asyncio
-import os
+import re
 import time
-from asyncio import sleep
 
 import httpx
+import requests
 
 from config_reader import config
 from random_choice import tarot_deck
-import requests
+
 
 class GenerationException(Exception):
     ...
@@ -72,8 +72,9 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
 
     return "\n".join(res)
 
+
 def download_file(url):
-    local_filename = url.split('/')[-1]
+    local_filename = re.search(".*/(\w+\.mp4).*", url).group(1)
 
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
@@ -85,7 +86,7 @@ def download_file(url):
 
 def get_did_video(text):
     url = "https://api.d-id.com/talks"
-    key = ''
+    key = config.d_id_key
     payload = {
         "script": {
             "type": "text",
@@ -122,9 +123,9 @@ def get_did_video(text):
     result_url = None
     for i in range(100):
         if 'result_url' not in response:
-           time.sleep(3)
-           response = requests.get(url, headers=headers).json()
-           print(response)
+            time.sleep(3)
+            response = requests.get(url, headers=headers).json()
+            print(response)
         else:
             result_url = response["result_url"]
             break
@@ -133,6 +134,7 @@ def get_did_video(text):
     filepath = download_file(result_url)
     return filepath, True
 
+
 if __name__ == "__main__":
     asyncio.run(generate_prediction("Когда Эмир встретит свою суженную",
-                                     [str(x) for x in tarot_deck.random_choice()]))
+                                    [str(x) for x in tarot_deck.random_choice()]))

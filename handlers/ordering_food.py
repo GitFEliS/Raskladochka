@@ -1,11 +1,10 @@
 from typing import List
 
-from aiogram import Router, F, Bot
+from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import InputMediaPhoto, Message, ReplyKeyboardRemove, Update, LabeledPrice, PreCheckoutQuery, \
-    FSInputFile
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import FSInputFile, InputMediaPhoto, LabeledPrice, Message, PreCheckoutQuery, ReplyKeyboardRemove
 
 from config_reader import config
 from gpt import GenerationException, generate_prediction as yandex_prediction, get_did_video
@@ -45,7 +44,7 @@ async def cmd_taro(message: Message, bot: Bot, state: FSMContext):
     description = "Оплата позволит вам обратиться к древней жрице"
     payload = "Custom-Payload"
     currency = "rub"
-    price = 30000
+    price = 300_00
     prices = [LabeledPrice(label="Оплата", amount=price)]
 
     await bot.send_invoice(
@@ -56,8 +55,7 @@ async def cmd_taro(message: Message, bot: Bot, state: FSMContext):
         payload=payload,
         provider_token=config.payment_token,
         currency=currency,
-        prices=prices,
-
+        prices=prices
     )
 
 
@@ -142,7 +140,7 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
 async def send_video(message: Message, bot: Bot, text: str, state: FSMContext):
     filepath, success = get_did_video(text)
     if success:
-        await bot.send_video(message.chat.id, FSInputFile(filepath))
+        await bot.send_video_note(message.chat.id, FSInputFile(filepath))
     else:
         await message.answer(f"На камеру навели порчу, деньги пойдут на ее смыв", parse_mode="Markdown")
     return success
@@ -184,7 +182,6 @@ async def ask_question_video(message: Message, state: FSMContext, bot: Bot):
             await message.answer(f"Отправляю вопрос стандартной гадалке", reply_markup=ReplyKeyboardRemove())
             result = await sber_prediction(user_message, card_names)
 
-    await send_photos(message, bot, cards_img)
     await send_video(message, bot, result, state)
     await state.clear()
 
