@@ -1,11 +1,11 @@
 import io
 import grpc
 import pydub
-
+import asyncio
 
 import yandex.cloud.ai.tts.v3.tts_pb2 as tts_pb2
 import yandex.cloud.ai.tts.v3.tts_service_pb2_grpc as tts_service_pb2_grpc
-
+import gpt
 
 from config_reader import config
 
@@ -13,6 +13,7 @@ from config_reader import config
 def synthesize(text, voice = 'marina', speed = 1, role = '') -> pydub.AudioSegment:
     request = tts_pb2.UtteranceSynthesisRequest(
         text=text,
+        unsafe_mode=True,
         output_audio_spec=tts_pb2.AudioFormatOptions(
             container_audio=tts_pb2.ContainerAudio(
                 container_audio_type=tts_pb2.ContainerAudio.WAV
@@ -22,7 +23,7 @@ def synthesize(text, voice = 'marina', speed = 1, role = '') -> pydub.AudioSegme
         hints=[
           tts_pb2.Hints(voice= voice), # (Опционально) Задайте голос. Значение по умолчанию marina
           tts_pb2.Hints(role = role), # (Опционально) Укажите амплуа, только если голос их имеет
-          tts_pb2.Hints(speed=speed) # (Опционально) Задайте скорость синтеза
+          tts_pb2.Hints(speed=speed), # (Опционально) Задайте скорость синтеза
         ],
 
         loudness_normalization_type=tts_pb2.UtteranceSynthesisRequest.LUFS
@@ -53,8 +54,16 @@ def synthesize(text, voice = 'marina', speed = 1, role = '') -> pydub.AudioSegme
 
 
 
-if __name__ == '__main__':\
+if __name__ == '__main__':
 
-    audio = synthesize("Привет, я - долбаеб, все хуйня, давай по новой")
+    prediction = asyncio.run(gpt.generate_prediction("Когда Эмир встретит свою суженную", gpt.tarot_deck.random_choice()))
+
+    print(len(prediction))
+
+    if len(prediction) > 4500:    
+        audio = synthesize(prediction)
+    else:
+        audio = synthesize(prediction[:4500])
+
     with open("output.wav", 'wb') as fp:
         audio.export(fp, format='wav')
