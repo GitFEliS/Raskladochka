@@ -1,16 +1,16 @@
+import asyncio
 import io
+
 import grpc
 import pydub
-import asyncio
 
+import gpt
 import yandex.cloud.ai.tts.v3.tts_pb2 as tts_pb2
 import yandex.cloud.ai.tts.v3.tts_service_pb2_grpc as tts_service_pb2_grpc
-import gpt
-
 from config_reader import config
 
 
-def synthesize(text, voice = 'marina', speed = 1, role = '') -> pydub.AudioSegment:
+def synthesize(text, voice='marina', speed=1, role='') -> pydub.AudioSegment:
     request = tts_pb2.UtteranceSynthesisRequest(
         text=text,
         unsafe_mode=True,
@@ -21,9 +21,9 @@ def synthesize(text, voice = 'marina', speed = 1, role = '') -> pydub.AudioSegme
         ),
         # Параметры синтеза
         hints=[
-          tts_pb2.Hints(voice= voice), # (Опционально) Задайте голос. Значение по умолчанию marina
-          tts_pb2.Hints(role = role), # (Опционально) Укажите амплуа, только если голос их имеет
-          tts_pb2.Hints(speed=speed), # (Опционально) Задайте скорость синтеза
+            tts_pb2.Hints(voice=voice),  # (Опционально) Задайте голос. Значение по умолчанию marina
+            tts_pb2.Hints(role=role),  # (Опционально) Укажите амплуа, только если голос их имеет
+            tts_pb2.Hints(speed=speed),  # (Опционально) Задайте скорость синтеза
         ],
 
         loudness_normalization_type=tts_pb2.UtteranceSynthesisRequest.LUFS
@@ -52,11 +52,9 @@ def synthesize(text, voice = 'marina', speed = 1, role = '') -> pydub.AudioSegme
         raise err
 
 
-
-
 if __name__ == '__main__':
-
-    prediction = asyncio.run(gpt.generate_prediction("Когда Эмир встретит свою суженную", [str (x) for x in gpt.tarot_deck.random_choice()]))
+    prediction = asyncio.run(
+        gpt.generate_prediction("Когда Эмир встретит свою суженную", [str(x) for x in gpt.tarot_deck.random_choice()]))
 
     audio = synthesize(prediction)
 

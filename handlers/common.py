@@ -1,6 +1,5 @@
 from aiogram import F, Router
-from aiogram.filters import Command
-from aiogram.filters import StateFilter
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, ReplyKeyboardRemove
@@ -14,7 +13,7 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer(
         text="Если хочешь погадать, то с помощью команды /taro ты сможешь получить ответ от гадалки.",
         reply_markup=ReplyKeyboardRemove()
-        )
+    )
 
 
 @router.message(StateFilter(None), Command(commands=["cancel"]))
@@ -24,7 +23,7 @@ async def cmd_cancel_no_state(message: Message, state: FSMContext):
     await message.answer(
         text="Нечего отменять",
         reply_markup=ReplyKeyboardRemove()
-        )
+    )
 
 
 @router.message(Command(commands=["cancel"]))
@@ -34,4 +33,4 @@ async def cmd_cancel(message: Message, state: FSMContext):
     await message.answer(
         text="Действие отменено",
         reply_markup=ReplyKeyboardRemove()
-        )
+    )

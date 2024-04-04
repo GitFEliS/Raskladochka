@@ -136,3 +136,4 @@ dmypy.json
 poetry.lock
 .idea/
 output.wav
+*.mp4
