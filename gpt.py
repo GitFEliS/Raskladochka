@@ -38,7 +38,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
     url = r"https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
     header = {"Authorization": f"Api-Key {config.api_key}"}
     body = {
-        f"modelUri": "gpt://{config.cloud_id}/yandexgpt-lite/latest",
+        "modelUri": f"gpt://{config.cloud_id}/yandexgpt-lite/latest",
         "completionOptions": {
             "stream": False,
             "temperature": 0.9,
@@ -54,7 +54,7 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
                 "text": answer_requirements_prompt()
             }
         ]
-}
+    }
     async with httpx.AsyncClient() as client:
         res_dict = (await client.post(url=url, headers=header, json=body, timeout=30)).raise_for_status().json()
     messages = res_dict['result']['alternatives']
@@ -72,4 +72,4 @@ async def generate_prediction(question: str, cards: list[str]) -> str:
 
 if __name__ == "__main__":
     asyncio.run(generate_prediction("Когда Эмир встретит свою суженную",
-                                    tarot_deck.random_choice()))
+                                     tarot_deck.random_choice()))
