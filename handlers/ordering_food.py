@@ -8,7 +8,7 @@ from aiogram.types import InputMediaPhoto, Message, ReplyKeyboardRemove, Update,
     FSInputFile
 
 from config_reader import config
-from gpt import GenerationException, generate_prediction as yandex_prediction
+from gpt import GenerationException, generate_prediction as yandex_prediction, get_did_video
 from gpt_gigachat import generate_prediction as sber_prediction
 from keyboards.simple_row import make_row_keyboard
 from random_choice import tarot_deck
@@ -83,6 +83,14 @@ async def send_photos(message: Message, bot: Bot, cards: List[str]):
         media_group.append(InputMediaPhoto(media=FSInputFile(folder_path + '/' + image)))
     await bot.send_media_group(message.chat.id, media=media_group)
 
+async def send_video(message: Message, bot: Bot, text, state: FSMContext):
+    filepath, success = get_did_video(text)
+    if success:
+        await bot.send_video(message.chat.id, FSInputFile(filepath))
+    else:
+        await message.answer(f"На камеру навели порчу", parse_mode="Markdown")
+    await message.answer(f"Напиши свой новый вопрос", parse_mode="Markdown")
+    await state.set_state(TaroQuestion.ask_question)
 
 @router.message(TaroQuestion.confirm_qustion, F.text.in_(q_types_correct))
 async def ask_question(message: Message, state: FSMContext, bot: Bot):
