@@ -128,4 +128,4 @@ def get_did_video(text):
 
 if __name__ == "__main__":
     asyncio.run(generate_prediction("Когда Эмир встретит свою суженную",
-                                     tarot_deck.random_choice()))
+                                     [str(x) for x in tarot_deck.random_choice()]))

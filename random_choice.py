@@ -38,7 +38,7 @@ class TarotDeck:
     def random_choice(self, n: int = 3):
         self.shuffle_deck()
         sample = self.deck[:n]
-        return [str(x) for x in sample]
+        return sample
 
 
 tarot_deck = TarotDeck("tarot-images.json")

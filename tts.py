@@ -56,7 +56,7 @@ def synthesize(text, voice = 'marina', speed = 1, role = '') -> pydub.AudioSegme
 
 if __name__ == '__main__':
 
-    prediction = asyncio.run(gpt.generate_prediction("Когда Эмир встретит свою суженную", gpt.tarot_deck.random_choice()))
+    prediction = asyncio.run(gpt.generate_prediction("Когда Эмир встретит свою суженную", [str (x) for x in gpt.tarot_deck.random_choice()]))
 
     audio = synthesize(prediction)
 
