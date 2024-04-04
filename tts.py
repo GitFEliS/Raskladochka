@@ -58,12 +58,7 @@ if __name__ == '__main__':
 
     prediction = asyncio.run(gpt.generate_prediction("Когда Эмир встретит свою суженную", gpt.tarot_deck.random_choice()))
 
-    print(len(prediction))
-
-    if len(prediction) > 4500:    
-        audio = synthesize(prediction)
-    else:
-        audio = synthesize(prediction[:4500])
+    audio = synthesize(prediction)
 
     with open("output.wav", 'wb') as fp:
         audio.export(fp, format='wav')
