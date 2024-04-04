@@ -1,4 +1,6 @@
 import asyncio
+import os
+import time
 from asyncio import sleep
 
 import httpx
@@ -83,7 +85,7 @@ def download_file(url):
 
 def get_did_video(text):
     url = "https://api.d-id.com/talks"
-
+    key = ''
     payload = {
         "script": {
             "type": "text",
@@ -105,7 +107,9 @@ def get_did_video(text):
 
     response = requests.post(url, json=payload, headers=headers).json()
     print(response)
-    if id not in response:
+    # response = {'id': 'tlk_K1AD6DwSIv3jK4edx2cfo', 'created_at': '2024-04-04T15:35:35.594Z', 'created_by': 'google-oauth2|112530815611835249455', 'status': 'created', 'object': 'talk'}
+
+    if 'id' not in response:
         return None, False
     talk_id = response["id"]
     url = f"https://api.d-id.com/talks/{talk_id}"
@@ -114,10 +118,13 @@ def get_did_video(text):
         "authorization": f"Basic {key}"
     }
     response = requests.get(url, headers=headers).json()
+    print(response)
     result_url = None
-    for i in range(5):
+    for i in range(100):
         if 'result_url' not in response:
-            sleep(5)
+           time.sleep(3)
+           response = requests.get(url, headers=headers).json()
+           print(response)
         else:
             result_url = response["result_url"]
             break

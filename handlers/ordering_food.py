@@ -16,6 +16,8 @@ from random_choice import tarot_deck
 router = Router()
 
 q_types = ["Да", "Задать вопрос заново", "Выбрать таролога"]
+q_types_text = ["Текст"]
+q_types_video = ["Видео"]
 q_types_correct = ["Да"]
 q_types_again = ["Задать вопрос заново"]
 q_types_taro = ["Выбрать таролога"]
@@ -26,8 +28,9 @@ generator_types = ["Желтая жрица таро", "Зеленая ведь�
 class TaroQuestion(StatesGroup):
     payment = State()
     ask_question = State()
-    confirm_qustion = State()
+    confirm_question = State()
     chose_generator = State()
+    choose_format = State()
 
 
 cool_dict = {}
@@ -73,7 +76,15 @@ async def ask_question(message: Message, state: FSMContext):
     await message.answer(f"Вопрос который задаем гадалке - '{message.text}' Все верно?",
                          reply_markup=make_row_keyboard(q_types)
                          )
-    await state.set_state(TaroQuestion.confirm_qustion)
+    await state.set_state(TaroQuestion.confirm_question)
+
+
+@router.message(TaroQuestion.confirm_question, F.text.in_(q_types_correct))
+async def choose_format(message: Message, state: FSMContext):
+    await message.answer("Выберите формат ответа:",
+                         reply_markup=make_row_keyboard(["Текст", "Видео"])
+                         )
+    await state.set_state(TaroQuestion.choose_format)
 
 
 async def send_photos(message: Message, bot: Bot, cards: List[str]):
@@ -83,16 +94,8 @@ async def send_photos(message: Message, bot: Bot, cards: List[str]):
         media_group.append(InputMediaPhoto(media=FSInputFile(folder_path + '/' + image)))
     await bot.send_media_group(message.chat.id, media=media_group)
 
-async def send_video(message: Message, bot: Bot, text, state: FSMContext):
-    filepath, success = get_did_video(text)
-    if success:
-        await bot.send_video(message.chat.id, FSInputFile(filepath))
-    else:
-        await message.answer(f"На камеру навели порчу", parse_mode="Markdown")
-    await message.answer(f"Напиши свой новый вопрос", parse_mode="Markdown")
-    await state.set_state(TaroQuestion.ask_question)
 
-@router.message(TaroQuestion.confirm_qustion, F.text.in_(q_types_correct))
+@router.message(TaroQuestion.choose_format, F.text.in_(q_types_text))
 async def ask_question(message: Message, state: FSMContext, bot: Bot):
     user_message = cool_dict.get(message.chat.id, 'Сообщение не найдено.')
     print(user_message)
@@ -107,7 +110,8 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
             try:
                 result = await yandex_prediction(user_message, card_names)
             except GenerationException:
-                await message.answer("Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await message.answer(
+                    "Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
                 await state.clear()
                 return
         case "Желтая жрица таро":
@@ -115,7 +119,8 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
             try:
                 result = await yandex_prediction(user_message, card_names)
             except GenerationException:
-                await message.answer("Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await message.answer(
+                    "Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
                 await state.clear()
                 return
         case "Зеленая ведьма":
@@ -123,7 +128,7 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
             result = await sber_prediction(user_message, card_names)
 
         case _:
-            await message.answer(f"Отправляю вопрос стандартной гадалке" , reply_markup=ReplyKeyboardRemove())
+            await message.answer(f"Отправляю вопрос стандартной гадалке", reply_markup=ReplyKeyboardRemove())
             result = await sber_prediction(user_message, card_names)
 
     await send_photos(message, bot, cards_img)
@@ -134,7 +139,57 @@ async def ask_question(message: Message, state: FSMContext, bot: Bot):
     await state.clear()
 
 
-@router.message(TaroQuestion.confirm_qustion, F.text.in_(q_types_again))
+async def send_video(message: Message, bot: Bot, text: str, state: FSMContext):
+    filepath, success = get_did_video(text)
+    if success:
+        await bot.send_video(message.chat.id, FSInputFile(filepath))
+    else:
+        await message.answer(f"На камеру навели порчу, деньги пойдут на ее смыв", parse_mode="Markdown")
+    return success
+
+
+@router.message(TaroQuestion.choose_format, F.text.in_(q_types_video))
+async def ask_question_video(message: Message, state: FSMContext, bot: Bot):
+    user_message = cool_dict.get(message.chat.id, 'Сообщение не найдено.')
+    print(user_message)
+    cards = tarot_deck.random_choice(3)
+    card_names = [str(card) for card in cards]
+    cards_img = list(map(lambda x: x.img_path, cards))
+    generator = cool_dict.get(message.chat.username, None)
+
+    match generator:
+        case None:
+            await message.answer(f"Отправляю вопрос потерянной жрице", reply_markup=ReplyKeyboardRemove())
+            try:
+                result = await yandex_prediction(user_message, card_names)
+            except GenerationException:
+                await message.answer(
+                    "Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await state.clear()
+                return
+        case "Желтая жрица таро":
+            await message.answer(f"Отправляю вопрос желтой жрице", reply_markup=ReplyKeyboardRemove())
+            try:
+                result = await yandex_prediction(user_message, card_names)
+            except GenerationException:
+                await message.answer(
+                    "Жрица посчитала данный вопрос неуместным и отказалась отвечать на него. Деньги не будут возвращены")
+                await state.clear()
+                return
+        case "Зеленая ведьма":
+            await message.answer(f"Отправляю вопрос зеленой ведьме", reply_markup=ReplyKeyboardRemove())
+            result = await sber_prediction(user_message, card_names)
+
+        case _:
+            await message.answer(f"Отправляю вопрос стандартной гадалке", reply_markup=ReplyKeyboardRemove())
+            result = await sber_prediction(user_message, card_names)
+
+    await send_photos(message, bot, cards_img)
+    await send_video(message, bot, result, state)
+    await state.clear()
+
+
+@router.message(TaroQuestion.confirm_question, F.text.in_(q_types_again))
 async def ask_question(message: Message, state: FSMContext):
     print(message.text)
     await message.answer(f"Напиши свой новый вопрос", parse_mode="Markdown"
@@ -142,7 +197,7 @@ async def ask_question(message: Message, state: FSMContext):
     await state.set_state(TaroQuestion.ask_question)
 
 
-@router.message(TaroQuestion.confirm_qustion, F.text.in_(q_types_taro))
+@router.message(TaroQuestion.confirm_question, F.text.in_(q_types_taro))
 async def chose_generator(message: Message, state: FSMContext):
     print(message.text)
     await message.answer(f"Выбери своего таролога", reply_markup=make_row_keyboard(generator_types)
@@ -156,7 +211,8 @@ async def chose_generator(message: Message, state: FSMContext):
     cool_dict[message.chat.username] = message.text
     print(cool_dict)
 
-    await message.answer(f"Подтверждаем выбор. Вопрос который задаем гадалке -  {cool_dict[message.chat.id]}. Все верно?",
-                         reply_markup=make_row_keyboard(q_types)
-                         )
-    await state.set_state(TaroQuestion.confirm_qustion)
+    await message.answer(
+        f"Подтверждаем выбор. Вопрос который задаем гадалке -  {cool_dict[message.chat.id]}. Все верно?",
+        reply_markup=make_row_keyboard(q_types)
+    )
+    await state.set_state(TaroQuestion.confirm_question)
